@@ -6,23 +6,38 @@ object Main {
         val lines = Source.fromFile("Input.txt").getLines.toList
         
         println(s"Lines count: ${lines.size}")
+        val notCorrupted = lines.map(checkSyntax).filter(c => c.calcScore() == 0)
 
-        // val total = checkSyntax(lines(0))
+        println(s"Total not corrupted: ${notCorrupted.size}")
 
-        val total = lines.map(checkSyntax).sum
+        val scores = notCorrupted.map(getStackScore)
 
-        println(s"Total score: ${total}")
+        println(scores)
+
+        val middleIndex = (notCorrupted.size - 1)/2
+        val middleScore = scores.sorted.toList(middleIndex)
+
+        println(s"Result: ${middleScore}")
     }
 
-    def checkSyntax(line: String): Long = {
-        println(s"Line '${line}'")
+    def getStackScore(syntaxPairCount: SyntaxPairCount): Long = {
+        var itemsOnStack = syntaxPairCount.stack.toList
 
+        println(s"Stack: ${itemsOnStack}")
+
+        val score = itemsOnStack.foldLeft(0.toLong)((res, i) => res * 5 + i)
+
+        println(s"Score: ${score}")
+        println()
+
+        score
+    }
+
+    def checkSyntax(line: String): SyntaxPairCount = {
         val syntaxItems = line.toList
         val syntaxPairCount = syntaxItems.foldLeft(new SyntaxPairCount())(addSyntaxItem)
 
-        // syntaxPairCount.printResult()
-
-        syntaxPairCount.calcScore()
+        syntaxPairCount
     }
 
     def addSyntaxItem(syntaxCount: SyntaxPairCount, item: Char): SyntaxPairCount = {
@@ -50,7 +65,6 @@ object Main {
 
         def inc(syntax: Int): Unit = {
             stack.push(syntax)
-            println(s"    Inc '${toSyntaxText(syntax, true)}'")
         }
 
         def dec(syntax: Int): Unit = {
@@ -62,15 +76,11 @@ object Main {
                 val popVal = stack.pop()
                 if (popVal != syntax) {
                     illegal = true
-                    // stack.push(popVal)
                 }
             }
 
             if (illegal) {
-                println(s"  Dec ${toSyntaxText(syntax, false)} [Illegal] score + ${score(syntax)}")
                 countIllegal(syntax)
-            } else {
-                println(s"  Dec ${toSyntaxText(syntax, false)}")
             }
         }
 
